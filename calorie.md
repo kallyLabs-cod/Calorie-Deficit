@@ -18,3 +18,5 @@ Main Objectives:
 1. Get Calories consumed per day 
 2. Compute BMI
 3. Notify if the user goes past the recommended calorie limit
+4. Get Activity Level
+
