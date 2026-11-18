@@ -2,3 +2,5 @@
 
 1. calcount file is the main file
 2. calorie file is the draft file
+
+note: as long as the calorie file isn't finished yet. don't move stuff to the calcount file yet.
