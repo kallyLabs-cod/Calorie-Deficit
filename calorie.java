@@ -82,7 +82,7 @@ public class calorie {
        
         // Get Activity Levels
         do{
-            System.out.println("Activity Levels: ");
+            System.out.println("\nActivity Levels: ");
             System.out.println("1. Sedentary");
             System.out.println("2. Light");
             System.out.println("3. Moderate");
@@ -99,7 +99,7 @@ public class calorie {
 
         //Target 
         do{
-            System.out.println("Deficit Options");
+            System.out.println("\nDeficit Options");
             System.out.println("1.250 (0.25kg/week)");
             System.out.println("2.500 (0.5kg/week)");
             System.out.println("3.750 (0.75kg/week)");
@@ -134,13 +134,13 @@ public class calorie {
 
             System.out.println("\n=====================================");
             System.out.println("              " + days[i].toUpperCase());
-            System.out.println("=======================================");
+            System.out.println("======================================");
 
             //The 3 meals loop
             for(int j = 0; j < 3 && !exit; j++){
                 records[i][j] = new ArrayList<>();
 
-                System.out.println("\n----------------" + meals[j] + "------------------");
+                System.out.println("----------------" + meals[j] + "------------------");
                 boolean mealFinished = false;
 
                 //Time to input the food
@@ -210,10 +210,53 @@ public class calorie {
         }
         System.out.println("                WEEKLY REPORT");
         int recordedDays = 0;
-        int ex
+        int exceededDays = 0;
+        
+        for(int i = 0; i < 7;i++){
+            if(dayStarted[i]){
+                recordedDays++;
 
+                System.out.println("\n" + days[i]);
+                for(int j = 0; j < 3;j++){
+                    if(records[i][j] == null){
+                        continue;
+                    }
+                    System.out.println("\n" + meals[j]);
+                    for(Food food : records[i][j]){
+                        System.out.printf("%s | %.2f grams | %.2f kcal",
+                            food.name,
+                            food.grams,
+                            food.calories
+                        );
+                    }
+                    System.out.printf("Meal Total: %.2fkcal\n", mealCalories[i][j]);
+                }
+                System.out.printf("\nDaily Total: %.2fkcal\n", dailyCalories[i]);
+
+                if(dailyCalories[i] > defiamt){
+                    System.out.println("Status: TARGET EXCEEDED");
+                    exceededDays++;
+                }else{
+                    System.out.println("Status: WITHIN TARGET");
+                }
+                weeklyTotal += dailyCalories[i];
+            }
+        }
+        //Final Stuff
+        System.out.println("===========FINAL===========");
+
+        System.out.printf("Daily Target Calorie: %.2f kcal\n", defiamt);
+        System.out.printf("Weekly Calories Consumed: %.2f kcal\n", weeklyTotal);
+
+        if(recordedDays > 0){
+            System.out.printf("Average Calorie Total: %.2f kcal\n", weeklyTotal/recordedDays);
+        }
+
+        System.out.println("Days Recorded: " + recordedDays + "/7");
+        System.out.println("Days Exceeding Target: " + exceededDays);
+        System.out.println("============================");
     }
-    public static int inputInt(Scanner sc, String message, int min, int max) {
+    static int inputInt(Scanner sc, String message, int min, int max) {
 
         while (true) {
             System.out.print(message);
@@ -284,5 +327,5 @@ public class calorie {
         }
         return 0;
     };
-    
 }
+
