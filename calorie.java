@@ -83,10 +83,10 @@ public class calorie {
         // Get Activity Levels
         do{
             System.out.println("\nActivity Levels: ");
-            System.out.println("1. Sedentary");
-            System.out.println("2. Light");
-            System.out.println("3. Moderate");
-            System.out.println("4. Very");
+            System.out.println("[1] Sedentary");
+            System.out.println("[2] Light");
+            System.out.println("[3] Moderate");
+            System.out.println("[4] Very");
             System.out.print("Activity lvl(1-4): ");
             act = sc.nextInt();
 
@@ -100,10 +100,10 @@ public class calorie {
         //Target 
         do{
             System.out.println("\nDeficit Options");
-            System.out.println("1.250 (0.25kg/week)");
-            System.out.println("2.500 (0.5kg/week)");
-            System.out.println("3.750 (0.75kg/week)");
-            System.out.println("4.7700 (1kg/week)");
+            System.out.println("[1] 250 (0.25kg/week)");
+            System.out.println("[2] 500 (0.5kg/week)");
+            System.out.println("[3] 750 (0.75kg/week)");
+            System.out.println("[4] 7700 (1kg/week)");
             System.out.print("Choose your Deficit Amount:");
             defiamt = sc.nextInt();
 
@@ -114,38 +114,44 @@ public class calorie {
 
         System.out.printf("Your Target Deficit Amount is: %.0f%n", 
             deficitAmount(height, defiamt));
+        sc.nextLine();
         //Start of the Loop
 
+        String[] weeks = {"Previous Week", "Current Week"};
         String[] days = {"Monday", "Tuesday", "Wednesdy", "Thursday", "Friday", "Saturday", "Sunday"};
         String[] meals = {"Breakfast", "Lunch", "Dinner"};
 
         //Food Records
-        ArrayList<Food>[][] records = new ArrayList[7][3]; //for the food entries(day, meals)
-        double[][] mealCalories = new double[7][3]; //calories per meal
-        double[][] mealGrams = new double[7][3]; //grams per meal
-        double[] dailyCalories = new double[7]; //daily calories
-        boolean[] dayStarted = new boolean[7]; //to track the days progressed in a week
+        ArrayList<Food>[][][] records = new ArrayList[2][7][3]; //for the food entries(day, meals)
+        double[][][] mealCalories = new double[2][7][3]; //calories per meal
+        double[][][] mealGrams = new double[2][7][3]; //grams per meal
+        double[][] dailyCalories = new double[2][7]; //daily calories
+        boolean[][] dayStarted = new boolean[2][7]; //to track the days progressed in a week
         boolean exit = false; //for the exit option
         double weeklyTotal = 0;
 
-        //Weekly Loop
-        for(int i = 0; i < 7 && !exit; i++){
-            dayStarted[i] = true;
+        double weeklyTotalPrevious = 0;
+        double weeklyTotalCurrent = 0;
+        //Two week loop
+        for(int w = 0; w < 2 && !exit;w++){
+            //Weekly Loop
+            for(int i = 0; i < 7 && !exit; i++){
+            dayStarted[w][i] = true;
 
-            System.out.println("\n=====================================");
-            System.out.println("              " + days[i].toUpperCase());
+            System.out.println("\n======================================");
+            System.out.println("                 " + days[i].toUpperCase());
             System.out.println("======================================");
 
             //The 3 meals loop
             for(int j = 0; j < 3 && !exit; j++){
-                records[i][j] = new ArrayList<>();
+                records[w][i][j] = new ArrayList<>();
 
-                System.out.println("----------------" + meals[j] + "------------------");
+                System.out.println("---------------" + meals[j] + "--------------");
                 boolean mealFinished = false;
 
                 //Time to input the food
                 while(!mealFinished && !exit){
-                    System.out.println("\nEnter Food Information: ");
+                    System.out.println("\nEnter Food Information");
                     System.out.print("Food Name: ");
                     String foodName = sc.nextLine().trim();
 
@@ -155,26 +161,31 @@ public class calorie {
                         foodName = sc.nextLine().trim();
                     }
 
-                    double calories = Double.parseDouble("Calories(kcal): ");
-                    double grams = Double.parseDouble("Weight(grams): ");
+                    System.out.print("Calories(kcal): ");
+                    double calories = Double.parseDouble(sc.nextLine());
+                    System.out.print("Weight(grams): ");
+                    double grams = Double.parseDouble(sc.nextLine());
 
                     Food food = new Food(foodName, calories, grams);
 
-                    records[i][j].add(food);
+                    records[w][i][j].add(food);
+
+                    mealCalories[w][i][j] += calories;
+                    dailyCalories[w][i] += calories;
                     System.out.println("\nFood Recorded."); //to test
-                    System.out.printf("Current Meal Calories: %.2fkcal\n", mealCalories[i][j]); //current meal calories
+                    System.out.printf("Current Meal Calories: %.2fkcal\n", mealCalories[w][i][j]); //current meal calories
 
                     //Menu time
                     boolean validChoice = false;
 
                     while(!validChoice && !exit){
                         System.out.println("\n========== MENU ==========");
-                        System.out.println("1. Add Another Food");
-                        System.out.println("2. Continue to Next Meal");
-                        System.out.println("3. Check Calorie Progress");
-                        System.out.println("4. Exit System");
+                        System.out.println("[1] Add Another Food");
+                        System.out.println("[2] Continue to Next Meal");
+                        System.out.println("[3] Check Calorie Progress");
+                        System.out.println("[4] Exit System");
 
-                        int choice = inputInt(sc, "Choose your Option: ", 18, 100);
+                        int choice = inputInt(sc, "Choose your Option: ", 1, 4);
 
                         switch(choice) {
 
@@ -189,7 +200,7 @@ public class calorie {
                                 break;
                             case 3:
                                 //check calories
-                                checkProgress(days[i], dailyCalories[i], defiamt);
+                                checkProgress(days[i], dailyCalories[w][i], deficitAmount(Tdee(bmr(gender, height, weight, age), act), defiamt));
                                 break;
                             case 4:
                                 //Exit
@@ -199,63 +210,116 @@ public class calorie {
                     }
 
                 }
-
-                if(!exit){
-                    System.out.println("\n==============SUMMARY============");
-                    System.out.printf("Total Food Weight: %.2f grams\n", mealGrams[i][j]);
-                    System.out.printf("Total Meal Calories: %.2fkcal\n", mealCalories[i][j]);
-                    checkProgress(days[i], dailyCalories[i], defiamt);
+                    if(!exit){
+                        System.out.println("\n==============SUMMARY============");
+                        System.out.printf("Total Grams: %.2f grams%n\n", mealGrams[w][i][j]);
+                        System.out.printf("Total Meal Calories: %.2fkcal%n\n", mealCalories[w][i][j]);
+                        checkProgress(days[i], dailyCalories[w][i], deficitAmount(Tdee(bmr(gender, height, weight, age), act), defiamt));
+                    }
                 }
             }
         }
-        System.out.println("                WEEKLY REPORT");
+        System.out.println("\n==========WEEKLY REPORT==========");
         int recordedDays = 0;
         int exceededDays = 0;
         
-        for(int i = 0; i < 7;i++){
-            if(dayStarted[i]){
-                recordedDays++;
+        for(int w = 0; w < 2;w++){
+            for(int i = 0; i < 7;i++){
+                if(dayStarted[w][i]){
+                    recordedDays++;
 
-                System.out.println("\n" + days[i]);
-                for(int j = 0; j < 3;j++){
-                    if(records[i][j] == null){
-                        continue;
+                    System.out.println("\n" + days[i]);
+                    for(int j = 0; j < 3;j++){
+                        if(records[w][i][j] == null){
+                            continue;
                     }
                     System.out.println("\n" + meals[j]);
-                    for(Food food : records[i][j]){
-                        System.out.printf("%s | %.2f grams | %.2f kcal",
+                    for(Food food : records[w][i][j]){
+                        System.out.printf(" %s | %.2f grams | %.2f kcal ",
                             food.name,
                             food.grams,
                             food.calories
                         );
                     }
-                    System.out.printf("Meal Total: %.2fkcal\n", mealCalories[i][j]);
-                }
-                System.out.printf("\nDaily Total: %.2fkcal\n", dailyCalories[i]);
+                    System.out.printf("Meal Total: %.2fkcal\n", mealCalories[w][i][j]);
+                    }
+                    System.out.printf("\nDaily Total: %.2fkcal\n", dailyCalories[w][i]);
 
-                if(dailyCalories[i] > defiamt){
-                    System.out.println("Status: TARGET EXCEEDED");
-                    exceededDays++;
-                }else{
-                    System.out.println("Status: WITHIN TARGET");
+                    if(dailyCalories[w][i] > deficitAmount(Tdee(bmr(gender, height, weight, age), act), defiamt)){
+                        System.out.println("Status: TARGET EXCEEDED");
+                        exceededDays++;
+                    }else{
+                        System.out.println("Status: WITHIN TARGET");
+                    }
+                    weeklyTotal += dailyCalories[w][i];
+
+                    if(recordedDays > 0){
+                    System.out.printf("Average Calorie Total: %.2f kcal\n", weeklyTotal/recordedDays);
+                    }
+
+                    System.out.println("Days Recorded: " + recordedDays + "/7");
+                    System.out.println("Days Exceeding Target: " + exceededDays);
+                    System.out.println("============================");
                 }
-                weeklyTotal += dailyCalories[i];
             }
         }
         //Final Stuff
-        System.out.println("===========FINAL===========");
+        int previousDays = 0;
+        int currentDays = 0;
 
-        System.out.printf("Daily Target Calorie: %.2f kcal\n", defiamt);
-        System.out.printf("Weekly Calories Consumed: %.2f kcal\n", weeklyTotal);
+        for (int i = 0; i < 7; i++) {
 
-        if(recordedDays > 0){
-            System.out.printf("Average Calorie Total: %.2f kcal\n", weeklyTotal/recordedDays);
+            if (dayStarted[0][i]) {
+                weeklyTotalPrevious += dailyCalories[0][i];
+                previousDays++;
+            }
+
+            if (dayStarted[1][i]) {
+                weeklyTotalCurrent += dailyCalories[1][i];
+                currentDays++;
+            }
         }
 
-        System.out.println("Days Recorded: " + recordedDays + "/7");
-        System.out.println("Days Exceeding Target: " + exceededDays);
-        System.out.println("============================");
+        System.out.println("\n===========WEEKLY COMPARISON===========");
+
+        System.out.printf("Daily Target Calorie: %.2f kcal\n", deficitAmount(Tdee(bmr(gender, height, weight, age), act), defiamt));
+        System.out.printf("Weekly Calories Consumed: %.2f kcal\n", weeklyTotal);
+
+        System.out.printf(weeks[0], " Total: %.2fkcal%n\n", weeklyTotalPrevious);
+        System.out.printf(weeks[1], " Total: %.2fkcal%n\n", weeklyTotalCurrent);
+
+        double difference = weeklyTotalCurrent - weeklyTotalPrevious;
+
+        System.out.printf(
+            "Weekly Difference: %.2f kcal%n",
+            difference
+        );
+
+        if (difference > 0) {
+            System.out.println("Calorie intake increased this week.");
+        } else if (difference < 0) {
+            System.out.println("Calorie intake decreased this week.");
+        } else {
+            System.out.println("Calorie intake remained the same.");
+        }
+
+        //Percentage Change
+        if (weeklyTotalPrevious > 0) {
+
+            double percentageChange =
+                (difference / weeklyTotalPrevious) * 100;
+
+            System.out.printf(
+                "Percentage Change: %.2f%%%n",
+                percentageChange
+            );
+
+        } else {
+            System.out.println("Percentage Change: Cannot calculate.");
+        }
+
     }
+
     static int inputInt(Scanner sc, String message, int min, int max) {
 
         while (true) {
@@ -277,7 +341,7 @@ public class calorie {
     }
 
     static void checkProgress(String day, double consumed, double amount){
-        System.out.println("===========CALORIE PROGRESS===========");
+        System.out.println("\n===========CALORIE PROGRESS===========");
         System.out.println("Day: " + day);
 
         System.out.printf("Target Calories: %.2fkcal\n", amount);
@@ -289,7 +353,7 @@ public class calorie {
             );
             System.out.println("Status: CALORIE TARGET EXCEEDED");
         }else{
-            System.out.printf("Remaining Calorie: %.2fkcal\n",
+            System.out.printf("Remaining Calories: %.2fkcal\n",
                 amount - consumed
             );
             System.out.println("Status: WITHIN CALORIE TARGET");
@@ -328,4 +392,3 @@ public class calorie {
         return 0;
     };
 }
-
