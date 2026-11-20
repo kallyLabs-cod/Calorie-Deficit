@@ -122,7 +122,7 @@ public class calorie {
         String[] meals = {"Breakfast", "Lunch", "Dinner"};
 
         //Food Records
-        ArrayList<Food>[][][] records = new ArrayList[2][7][3]; //for the food entries(day, meals)
+        ArrayList<Food>[][][] records = new ArrayList[2][7][3]; //for the food entries(week, day, meals)
         double[][][] mealCalories = new double[2][7][3]; //calories per meal
         double[][][] mealGrams = new double[2][7][3]; //grams per meal
         double[][] dailyCalories = new double[2][7]; //daily calories
@@ -170,6 +170,7 @@ public class calorie {
 
                     records[w][i][j].add(food);
 
+                    mealGrams[w][i][j] += grams;
                     mealCalories[w][i][j] += calories;
                     dailyCalories[w][i] += calories;
                     System.out.println("\nFood Recorded."); //to test
@@ -228,7 +229,7 @@ public class calorie {
                 if(dayStarted[w][i]){
                     recordedDays++;
 
-                    System.out.println("\n" + days[i]);
+                    System.out.println("\n----------" + days[i] + "----------");
                     for(int j = 0; j < 3;j++){
                         if(records[w][i][j] == null){
                             continue;
@@ -238,7 +239,8 @@ public class calorie {
                         System.out.printf(" %s | %.2f grams | %.2f kcal ",
                             food.name,
                             food.grams,
-                            food.calories
+                            food.calories,
+                            "\n"
                         );
                     }
                     System.out.printf("Meal Total: %.2fkcal\n", mealCalories[w][i][j]);
@@ -285,8 +287,8 @@ public class calorie {
         System.out.printf("Daily Target Calorie: %.2f kcal\n", deficitAmount(Tdee(bmr(gender, height, weight, age), act), defiamt));
         System.out.printf("Weekly Calories Consumed: %.2f kcal\n", weeklyTotal);
 
-        System.out.printf(weeks[0], " Total: %.2fkcal%n\n", weeklyTotalPrevious);
-        System.out.printf(weeks[1], " Total: %.2fkcal%n\n", weeklyTotalCurrent);
+        System.out.printf("\n", weeks[0],"\n", " Total: %.2fkcal%n\n", weeklyTotalPrevious);
+        System.out.printf("\n", weeks[1],"\n", " Total: %.2fkcal%n\n", weeklyTotalCurrent);
 
         double difference = weeklyTotalCurrent - weeklyTotalPrevious;
 
@@ -338,7 +340,7 @@ public class calorie {
                 System.out.println("Numbers only!");
             }
         }
-    }
+    };
 
     static void checkProgress(String day, double consumed, double amount){
         System.out.println("\n===========CALORIE PROGRESS===========");
