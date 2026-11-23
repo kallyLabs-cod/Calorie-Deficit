@@ -81,44 +81,19 @@ public class calorie {
         System.out.println("Your bmr is " + bmr(gender, height, weight, age) + ".");
        
         // Get Activity Levels
-        do{
-            System.out.println("\nActivity Levels: ");
-            System.out.println("[1] Sedentary");
-            System.out.println("[2] Light");
-            System.out.println("[3] Moderate");
-            System.out.println("[4] Very");
-            System.out.print("Activity lvl(1-4): ");
-            act = sc.nextInt();
+        act = inputInt(sc, "\nActivity Levels:\n" + "[1] Sedentary\n" + "[2] Light\n" + "[3] Moderate\n" + "[4] Very\n" + "Choose Your Activity Level: ", 1, 4);
 
-            if(act < 1 || act > 4){
-                System.out.println("Invalid Input! Please input a number from 1 to 4.");
-            }
-        }while(act < 1 || act > 4);
         System.out.printf("Your TDEE is: %.0f%n ", 
             Tdee(height, act));
 
         //Target 
-        do{
-            System.out.println("\nDeficit Options");
-            System.out.println("[1] 250 (0.25kg/week)");
-            System.out.println("[2] 500 (0.5kg/week)");
-            System.out.println("[3] 750 (0.75kg/week)");
-            System.out.println("[4] 7700 (1kg/week)");
-            System.out.print("Choose your Deficit Amount:");
-            defiamt = sc.nextInt();
-
-            if(defiamt < 1 || defiamt > 4){
-                System.out.println("Invalid Input! Please choose from 1 to 4.");
-            }
-        }while(defiamt < 1 || defiamt > 4);
-
-        System.out.printf("Your Target Deficit Amount is: %.0f%n", 
-            deficitAmount(height, defiamt));
-        sc.nextLine();
+        defiamt = inputInt(sc, "\nDeficit Options\n" + "[1] 250 (0.25kg/week)\n" + "[2] 500 (0.5kg/week)\n" + "[3] 750 (0.75kg/week)\n" + "[4] 1100 (1kg/week)\n" + "Choose your Deficit Amount: ", 1, 4);
+        System.out.printf("Your Target Amount is %.2f\n", deficitAmount(Tdee(bmr(gender, height, weight, age), act), defiamt));
+           
         //Start of the Loop
 
         String[] weeks = {"Previous Week", "Current Week"};
-        String[] days = {"Monday", "Tuesday", "Wednesdy", "Thursday", "Friday", "Saturday", "Sunday"};
+        String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
         String[] meals = {"Breakfast", "Lunch", "Dinner"};
 
         //Food Records
@@ -127,6 +102,7 @@ public class calorie {
         double[][][] mealGrams = new double[2][7][3]; //grams per meal
         double[][] dailyCalories = new double[2][7]; //daily calories
         boolean[][] dayStarted = new boolean[2][7]; //to track the days progressed in a week
+        double[] weeklyTarget = new double[2]; //to show the new weekly target
         boolean exit = false; //for the exit option
         double weeklyTotal = 0;
 
@@ -134,6 +110,26 @@ public class calorie {
         double weeklyTotalCurrent = 0;
         //Two week loop
         for(int w = 0; w < 2 && !exit;w++){
+
+            if(w == 1){
+
+            System.out.println("\n========== NEW WEEK ==========");
+            System.out.printf("Previous Weight: %.2f kg%n", weight);
+
+            weight = inputDouble(sc, "Enter your new weight (kg): ", 0, 500);
+
+            System.out.println("Weight successfully updated!");
+
+             double currentBmr = bmr(gender, height, weight, age);
+            double currentTdee = Tdee(currentBmr, act);
+
+            weeklyTarget[w] = deficitAmount(currentTdee, defiamt);
+
+            System.out.printf("Updated BMR: %.2f%n", currentBmr);
+            System.out.printf("Updated TDEE: %.2f%n", currentTdee);
+            System.out.printf("Target Calories: %.2f kcal%n", weeklyTarget[w]);
+            }
+
             //Weekly Loop
             for(int i = 0; i < 7 && !exit; i++){
             dayStarted[w][i] = true;
@@ -161,10 +157,9 @@ public class calorie {
                         foodName = sc.nextLine().trim();
                     }
 
-                    System.out.print("Calories(kcal): ");
-                    double calories = Double.parseDouble(sc.nextLine());
-                    System.out.print("Weight(grams): ");
-                    double grams = Double.parseDouble(sc.nextLine());
+                    double calories = inputDouble(sc, "Calories(kcal): ", i, act);
+    
+                    double grams = inputDouble(sc, "Weight(grams):", i, j);
 
                     Food food = new Food(foodName, calories, grams);
 
@@ -261,7 +256,7 @@ public class calorie {
 
                     System.out.println("Days Recorded: " + recordedDays + "/7");
                     System.out.println("Days Exceeding Target: " + exceededDays);
-                    System.out.println("============================");
+                    System.out.println("===============================");
                 }
             }
         }
@@ -321,6 +316,25 @@ public class calorie {
         }
 
     }
+    static double inputDouble(Scanner sc, String message, int min, int max){
+
+        while(true) {
+            System.out.print(message);
+
+            try {
+                double num = Double.parseDouble(sc.nextLine());
+
+                if(Double.isFinite(num) && num >= 0) {
+                    return num;
+                }
+
+                System.out.println("Enter a Non-Negative Number.");
+
+            } catch (NumberFormatException e) {
+                System.out.println("Numbers Only!");
+            }
+        }
+    };
 
     static int inputInt(Scanner sc, String message, int min, int max) {
 
@@ -343,7 +357,7 @@ public class calorie {
     };
 
     static void checkProgress(String day, double consumed, double amount){
-        System.out.println("\n===========CALORIE PROGRESS===========");
+        System.out.println("===========CALORIE PROGRESS===========");
         System.out.println("Day: " + day);
 
         System.out.printf("Target Calories: %.2fkcal\n", amount);
@@ -353,19 +367,27 @@ public class calorie {
             System.out.printf("Exceeded by: %.2fkcal\n",
                 consumed - amount
             );
-            System.out.println("Status: CALORIE TARGET EXCEEDED");
+            System.out.println("Status: CALORIE TARGET EXCEEDED\n");
         }else{
             System.out.printf("Remaining Calories: %.2fkcal\n",
                 amount - consumed
             );
-            System.out.println("Status: WITHIN CALORIE TARGET");
+            System.out.println("Status: WITHIN CALORIE TARGET\n");
         }
     };
 
     static double deficitAmount(double Tdee, double defiamt){
-        double amount;
+        double amount = 0;
 
-        amount = Tdee - defiamt;
+       if(defiamt == 1){
+        amount = Tdee - 250;
+       } else if(defiamt == 2){
+        amount = Tdee - 500;
+       }else if(defiamt == 3){
+        amount = Tdee - 750;
+       }else if(defiamt == 4){
+        amount = Tdee - 1100;
+       }
         return amount;
     };
     static double Tdee(double bmr, int act){
