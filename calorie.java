@@ -119,17 +119,16 @@ public class calorie {
             weight = inputDouble(sc, "Enter your new weight (kg): ", 0, 500);
 
             System.out.println("Weight successfully updated!");
-
-             double currentBmr = bmr(gender, height, weight, age);
+            };
+            double currentBmr = bmr(gender, height, weight, age);
             double currentTdee = Tdee(currentBmr, act);
-
             weeklyTarget[w] = deficitAmount(currentTdee, defiamt);
 
-            System.out.printf("Updated BMR: %.2f%n", currentBmr);
-            System.out.printf("Updated TDEE: %.2f%n", currentTdee);
-            System.out.printf("Target Calories: %.2f kcal%n", weeklyTarget[w]);
-            }
-
+            if(w == 1){
+                System.out.printf("Updated BMR: %.2f%n", currentBmr);
+                System.out.printf("Updated TDEE: %.2f%n", currentTdee);
+                System.out.printf("Target Calories: %.2f kcal%n", weeklyTarget[w]);
+            };
             //Weekly Loop
             for(int i = 0; i < 7 && !exit; i++){
             dayStarted[w][i] = true;
@@ -196,7 +195,7 @@ public class calorie {
                                 break;
                             case 3:
                                 //check calories
-                                checkProgress(days[i], dailyCalories[w][i], deficitAmount(Tdee(bmr(gender, height, weight, age), act), defiamt));
+                                checkProgress(days[i], dailyCalories[w][i], weeklyTarget[w]);
                                 break;
                             case 4:
                                 //Exit
@@ -210,16 +209,45 @@ public class calorie {
                         System.out.println("\n==============SUMMARY============");
                         System.out.printf("Total Grams: %.2f grams%n\n", mealGrams[w][i][j]);
                         System.out.printf("Total Meal Calories: %.2fkcal%n\n", mealCalories[w][i][j]);
-                        checkProgress(days[i], dailyCalories[w][i], deficitAmount(Tdee(bmr(gender, height, weight, age), act), defiamt));
+                        checkProgress(days[i], dailyCalories[w][i], weeklyTarget[w]);
                     }
                 }
             }
         }
         System.out.println("\n==========WEEKLY REPORT==========");
-        int recordedDays = 0;
-        int exceededDays = 0;
-        
+
+        boolean weekHasRecords[] = new boolean[2];
+
+        //To check if each week has food entries
+        for(int w = 0; w < 2; w++){
+
+            for(int i = 0; i < 7; i++){
+
+                for(int j = 0; j < 3; j++){
+
+                 if(records[w][i][j] != null &&
+                    !records[w][i][j].isEmpty()){
+
+                    weekHasRecords[w] = true;
+                    break;
+            }
+        }
+
+        if(weekHasRecords[w]){
+            break;
+        }
+    }
+} 
         for(int w = 0; w < 2;w++){
+            if(!weekHasRecords[w]){ //to skip weeks without food entries
+                continue;
+            }
+
+            int recordedDays = 0;
+            int exceededDays = 0;
+            double weekTotal = 0;
+            
+            System.out.println("\n----------" + "WEEK " + (w + 1) + "----------");
             for(int i = 0; i < 7;i++){
                 if(dayStarted[w][i]){
                     recordedDays++;
@@ -230,8 +258,9 @@ public class calorie {
                             continue;
                     }
                     System.out.println("\n" + meals[j]);
+
                     for(Food food : records[w][i][j]){
-                        System.out.printf(" %s | %.2f grams | %.2f kcal ",
+                        System.out.printf(" %s | %.2f grams | %.2f kcal | ",
                             food.name,
                             food.grams,
                             food.calories,
@@ -248,42 +277,38 @@ public class calorie {
                     }else{
                         System.out.println("Status: WITHIN TARGET");
                     }
+                    weekTotal += dailyCalories[w][i];
                     weeklyTotal += dailyCalories[w][i];
 
                     if(recordedDays > 0){
-                    System.out.printf("Average Calorie Total: %.2f kcal\n", weeklyTotal/recordedDays);
+                    System.out.printf("Average Calorie Total: %.2f kcal\n", recordedDays > 0 ? weeklyTotal/recordedDays : 0);
                     }
 
                     System.out.println("Days Recorded: " + recordedDays + "/7");
                     System.out.println("Days Exceeding Target: " + exceededDays);
                     System.out.println("===============================");
+
+                    if(w == 0){
+                        weeklyTotalPrevious = weekTotal;
+                    }else{
+                        weeklyTotalCurrent = weekTotal;
+                    }
                 }
             }
         }
         //Final Stuff
-        int previousDays = 0;
-        int currentDays = 0;
-
-        for (int i = 0; i < 7; i++) {
-
-            if (dayStarted[0][i]) {
-                weeklyTotalPrevious += dailyCalories[0][i];
-                previousDays++;
-            }
-
-            if (dayStarted[1][i]) {
-                weeklyTotalCurrent += dailyCalories[1][i];
-                currentDays++;
-            }
-        }
-
+        
         System.out.println("\n===========WEEKLY COMPARISON===========");
 
         System.out.printf("Daily Target Calorie: %.2f kcal\n", deficitAmount(Tdee(bmr(gender, height, weight, age), act), defiamt));
         System.out.printf("Weekly Calories Consumed: %.2f kcal\n", weeklyTotal);
 
-        System.out.printf("\n", weeks[0],"\n", " Total: %.2fkcal%n\n", weeklyTotalPrevious);
-        System.out.printf("\n", weeks[1],"\n", " Total: %.2fkcal%n\n", weeklyTotalCurrent);
+        System.out.printf("Previous Week Total: %.2fkcal%n\n", weeklyTotalPrevious);
+        if(weeklyTotalCurrent > 0){
+            System.out.printf("Current Week Total: %.2fkcal%n\n", weeklyTotalCurrent);
+        }else{
+            System.out.println("Current Week: No records yet.");
+        }
 
         double difference = weeklyTotalCurrent - weeklyTotalPrevious;
 
